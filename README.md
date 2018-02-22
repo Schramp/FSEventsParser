@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser?ref=badge_shield)
+
 Overview
 ---------------------
 
@@ -98,3 +100,7 @@ mask_hex: The hex representation of the record's mask.
 source: The fullpath of the FSEvents file that the record was parsed from.
 
 source_modified_time: The FSEvents source file modified date.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser?ref=badge_large)
