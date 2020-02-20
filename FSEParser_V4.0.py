@@ -1440,7 +1440,11 @@ def create_sqlite_db(self):
                     source_modified_time'
 
                 query = i['query'].split("*")
-                query = query[0] + cols + query[1]
+                try:
+                    query = query[0] + cols + query[1]
+                except IndexError:
+                    print("Query does not SELECT *. Trying to run the query as it is...")
+                    query = i['query']
 
                 try:
                     SQL_CON.execute(query)
