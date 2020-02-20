@@ -171,7 +171,7 @@ def parse_options():
 
     if not os.path.exists(meta['outdir']):
         options.error("Unable to proceed. \n\n%s does not exist.\n" % meta['outdir'])
-        
+
     if meta['reportqueries'] and not os.path.exists(meta['reportqueries']):
         options.error("Unable to proceed. \n\n%s does not exist.\n" % meta['reportqueries'])
 
@@ -185,7 +185,7 @@ def parse_options():
 
     if meta['reportqueries'] ==False:
         print '[Info]: Report queries file not specified using the -q option. Custom reports will not be generated.'
-        
+
     if meta['casename'] is False:
         print('[Info]: No casename specified using -c. Defaulting to "FSE_Reports".')
         meta['casename'] = 'FSE_Reports'
@@ -335,15 +335,15 @@ class FSEventHandler():
         row_count = reorder_sqlite_db(self)
         if row_count != 0:
             print('[FINISHED] {} UTC Sorting fsevents table in Database.\n'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
-    
+
             print('[STARTED] {} UTC Exporting fsevents table from Database.'.format(
                 strftime("%m/%d/%Y %H:%M:%S", gmtime())))
-    
+
             self.export_fsevent_report(self.l_all_fsevents, row_count)
-    
+
             print('[FINISHED] {} UTC Exporting fsevents table from Database.\n'.format(
                 strftime("%m/%d/%Y %H:%M:%S", gmtime())))
-    
+
             if self.r_queries:
                 print('[STARTED] {} UTC Exporting views from database '
                       'to TSV files.'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
@@ -353,9 +353,9 @@ class FSEventHandler():
                 self.export_sqlite_views()
                 print('[FINISHED] {} UTC Exporting views from database '
                       'to TSV files.\n'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
-    
+
             print("  Exception log and Reports exported to:\n  '{}'\n".format(os.path.join(self.meta['outdir'], self.meta['casename'])))
-    
+
             # Close output files
             self.l_all_fsevents.close()
             self.logfile.close()
@@ -509,7 +509,7 @@ class FSEventHandler():
         """
         # Print the header columns to the output file
         Output.print_columns(self.l_all_fsevents)
-                
+
         scan_path_spec = None
         scanner = source_scanner.SourceScanner()
         scan_context = source_scanner.SourceScannerContext()
@@ -526,12 +526,12 @@ class FSEventHandler():
             self.error_file_count = 0
             self.all_records_count = 0
             self.parsed_file_count = 0
-            
+
             try:
                 location = file_system_path_spec.parent.location
             except:
                 location = file_system_path_spec.location
-                
+
             print "  Processing Volume {}.\n".format(location)
 
             fs_event_path_spec = path_spec_factory.Factory.NewPathSpec(
@@ -543,7 +543,7 @@ class FSEventHandler():
             file_entry = resolver.Resolver.OpenFileEntry(
                 fs_event_path_spec
             )
-            
+
             if file_entry != None:
 
                 t_files = file_entry.number_of_sub_file_entries
@@ -639,7 +639,7 @@ class FSEventHandler():
 
                     # If DLSs were found, pass the decompressed file to be parsed
                     FSEventHandler.parse(self, buf)
-            
+
             else:
                 print('Unable to process volume or no fsevent files found')
                 continue
