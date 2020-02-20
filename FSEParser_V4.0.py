@@ -678,8 +678,7 @@ class FSEventHandler():
                 page_len = struct.unpack("<I", raw_file[start_offset + 8:start_offset + 12])[0]
                 end_offset = start_offset + page_len
 
-                if raw_file[start_offset:start_offset + 4] == '1SLD' or
-                raw_file[start_offset:start_offset + 4] == '2SLD':
+                if raw_file[start_offset:start_offset + 4] == '1SLD' or raw_file[start_offset:start_offset + 4] == '2SLD':
                     self.my_dls.append({'Start Offset': start_offset, 'End Offset': end_offset})
                     dls_count += 1
                 else:
