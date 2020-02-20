@@ -297,7 +297,8 @@ class FSEventHandler():
             if self.r_queries:
                 # Try to open custom report query output files
                 for i in self.r_queries['process_list']:
-                    r_file = os.path.join(self.meta['outdir'], self.meta['casename'], i['report_name'] + '.tsv')
+                    r_file = os.path.join(self.meta['outdir'], self.meta['casename'],
+                                          i['report_name'] + '.tsv')
                     if os.path.exists(r_file):
                         os.remove(r_file)
                     setattr(self, 'l_' + i['report_name'], open(r_file, 'wb'))
@@ -331,11 +332,13 @@ class FSEventHandler():
 
         print('[FINISHED] {} UTC Parsing files.\n'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
 
-        print('[STARTED] {} UTC Sorting fsevents table in Database.'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
+        print('[STARTED] {} UTC Sorting fsevents table in Database.'.format(
+            strftime("%m/%d/%Y %H:%M:%S", gmtime())))
 
         row_count = reorder_sqlite_db(self)
         if row_count != 0:
-            print('[FINISHED] {} UTC Sorting fsevents table in Database.\n'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
+            print('[FINISHED] {} UTC Sorting fsevents table in Database.\n'.format(
+                strftime("%m/%d/%Y %H:%M:%S", gmtime())))
 
             print('[STARTED] {} UTC Exporting fsevents table from Database.'.format(
                 strftime("%m/%d/%Y %H:%M:%S", gmtime())))
@@ -355,13 +358,15 @@ class FSEventHandler():
                 print('[FINISHED] {} UTC Exporting views from database '
                       'to TSV files.\n'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
 
-            print("  Exception log and Reports exported to:\n  '{}'\n".format(os.path.join(self.meta['outdir'], self.meta['casename'])))
+            print("  Exception log and Reports exported to:\n  '{}'\n".format(os.path.join(
+                self.meta['outdir'], self.meta['casename'])))
 
             # Close output files
             self.l_all_fsevents.close()
             self.logfile.close()
         else:
-            print('[FINISHED] {} UTC No records were parsed.\n'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
+            print('[FINISHED] {} UTC No records were parsed.\n'.format(
+                strftime("%m/%d/%Y %H:%M:%S", gmtime())))
             print('Nothing to export.\n')
 
     @contextlib.contextmanager
@@ -575,7 +580,8 @@ class FSEventHandler():
 
                     # Name of source fsevent file
                     self.src_filename = sub_file_entry.name
-                    self.src_fullpath = self.meta['source'] + ": " + location + sub_file_entry.path_spec.location
+                    self.src_fullpath = self.meta['source']\
+                        + ": " + location + sub_file_entry.path_spec.location
 
                     stat_object = sub_file_entry.GetStat()
 
@@ -672,7 +678,8 @@ class FSEventHandler():
                 page_len = struct.unpack("<I", raw_file[start_offset + 8:start_offset + 12])[0]
                 end_offset = start_offset + page_len
 
-                if raw_file[start_offset:start_offset + 4] == '1SLD' or raw_file[start_offset:start_offset + 4] == '2SLD':
+                if raw_file[start_offset:start_offset + 4] == '1SLD' or
+                raw_file[start_offset:start_offset + 4] == '2SLD':
                     self.my_dls.append({'Start Offset': start_offset, 'End Offset': end_offset})
                     dls_count += 1
                 else:
@@ -1101,7 +1108,8 @@ class FSEventHandler():
             # Check for decode errors
             try:
                 fullpath.decode('utf-8')
-            except:
+            except Exception as e:
+                sys.stderr.write(str(e))
                 decode_error = True
 
             # If any error exists return false to caller
@@ -1122,7 +1130,6 @@ class FSEventHandler():
         else:
             # Return true. fsevent file was not identified as being carved
             return True
-
 
     def apply_date(self, wd):
         """
