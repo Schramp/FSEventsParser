@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser?ref=badge_shield)
+
 Overview
 ---------------------
 
@@ -124,3 +126,7 @@ approx_dates_plus_minus_one_day: Approximate dates (no times) that the event occ
 source: The fullpath of the FSEvents file that the record was parsed from.
 
 source_modified_time: The FSEvents source file modified date in UTC.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser?ref=badge_large)
