@@ -47,7 +47,7 @@ try:
     IMPORT_ERROR = None
 except ImportError as exp:
     DFVFS_IMPORT = False
-    IMPORT_ERROR =("\n%s\n\
+    IMPORT_ERROR = ("\n%s\n\
         You have specified the source type as image but DFVFS \n\
         is not installed and is required for image support. \n\
         To install DFVFS please refer to \n\
@@ -114,12 +114,13 @@ def get_options():
                        dest="outdir",
                        default=False,
                        help="REQUIRED. The destination directory used to store parsed reports")
-    options.add_option("-t",
-                       action="store",
-                       type="string",
-                       dest="sourcetype",
-                       default=False,
-                       help="REQUIRED. The source type to be parsed. Available options are 'folder' or 'image'")
+    options.add_option(
+        "-t",
+        action="store",
+        type="string",
+        dest="sourcetype",
+        default=False,
+        help="REQUIRED. The source type to be parsed. Available options are 'folder' or 'image'")
     options.add_option("-c",
                        action="store",
                        type="string",
@@ -133,8 +134,7 @@ def get_options():
                        dest="report_queries",
                        default=False,
                        help="OPTIONAL. The location of the report_queries.json file \
-                       containing custom report queries to generate targeted reports."
-                       )
+                       containing custom report queries to generate targeted reports.")
 
     # Return options to caller #
     return options
@@ -164,14 +164,14 @@ def parse_options():
     # Test required arguments
     if meta['source'] is False or meta['outdir'] is False or meta['sourcetype'] is False:
         options.error('Unable to proceed. The following parameters '
-            'are required:\n-s SOURCE\n-o OUTDIR\n-t SOURCETYPE')
+                      'are required:\n-s SOURCE\n-o OUTDIR\n-t SOURCETYPE')
 
     if not os.path.exists(meta['source']):
         options.error("Unable to proceed. \n\n%s does not exist.\n" % meta['source'])
 
     if not os.path.exists(meta['outdir']):
         options.error("Unable to proceed. \n\n%s does not exist.\n" % meta['outdir'])
-        
+
     if meta['reportqueries'] and not os.path.exists(meta['reportqueries']):
         options.error("Unable to proceed. \n\n%s does not exist.\n" % meta['reportqueries'])
 
@@ -183,9 +183,9 @@ def parse_options():
     if meta['sourcetype'] == 'image' and DFVFS_IMPORT is False:
         options.error(IMPORT_ERROR)
 
-    if meta['reportqueries'] ==False:
-        print('[Info]: Report queries file not specified using the -q option. Custom reports will not be generated.')
-        
+    if meta['reportqueries'] is False:
+        print('[Info]: Report queries file not specified using the -q option.')
+
     if meta['casename'] is False:
         print('[Info]: No casename specified using -c. Defaulting to "FSE_Reports".')
         meta['casename'] = 'FSE_Reports'
@@ -239,7 +239,8 @@ def progress(count, total):
     p_bar = '=' * filled_len + '.' * (bar_len - filled_len)
     try:
         sys.stdout.write('  File {} of {}  [{}] {}{}\r'.format(count, total, p_bar, percents, '%'))
-    except:
+    except Exception as e:
+        sys.stderr.write(str(e))
         pass
     sys.stdout.flush()
 
@@ -288,15 +289,14 @@ class FSEventHandler():
         try:
             # Try to open ouput files
             self.l_all_fsevents = open(
-                os.path.join(self.meta['outdir'], self.meta['casename'], 'All_FSEVENTS.tsv'),
-                'wb'
-            )
+                os.path.join(self.meta['outdir'], self.meta['casename'], 'All_FSEVENTS.tsv'), 'wb')
             # Process report queries output files
             # if option was specified.
             if self.r_queries:
                 # Try to open custom report query output files
                 for i in self.r_queries['process_list']:
-                    r_file = os.path.join(self.meta['outdir'], self.meta['casename'], i['report_name'] + '.tsv')
+                    r_file = os.path.join(self.meta['outdir'], self.meta['casename'],
+                                          i['report_name'] + '.tsv')
                     if os.path.exists(r_file):
                         os.remove(r_file)
                     setattr(self, 'l_' + i['report_name'], open(r_file, 'wb'))
@@ -322,28 +322,29 @@ class FSEventHandler():
         elif self.meta['sourcetype'] == 'folder':
             self._get_fsevent_files()
             print('\n  All Files Attempted: {}\n  All Parsed Files: {}\n  Files '
-                  'with Errors: {}\n  All Records Parsed: {}'.format(
-                self.all_files_count,
-                self.parsed_file_count,
-                self.error_file_count,
-                self.all_records_count))
+                  'with Errors: {}\n  All Records Parsed: {}'.format(self.all_files_count,
+                                                                     self.parsed_file_count,
+                                                                     self.error_file_count,
+                                                                     self.all_records_count))
 
         print('[FINISHED] {} UTC Parsing files.\n'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
 
-        print('[STARTED] {} UTC Sorting fsevents table in Database.'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
+        print('[STARTED] {} UTC Sorting fsevents table in Database.'.format(
+            strftime("%m/%d/%Y %H:%M:%S", gmtime())))
 
         row_count = reorder_sqlite_db(self)
         if row_count != 0:
-            print('[FINISHED] {} UTC Sorting fsevents table in Database.\n'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
-    
+            print('[FINISHED] {} UTC Sorting fsevents table in Database.\n'.format(
+                strftime("%m/%d/%Y %H:%M:%S", gmtime())))
+
             print('[STARTED] {} UTC Exporting fsevents table from Database.'.format(
                 strftime("%m/%d/%Y %H:%M:%S", gmtime())))
-    
+
             self.export_fsevent_report(self.l_all_fsevents, row_count)
-    
+
             print('[FINISHED] {} UTC Exporting fsevents table from Database.\n'.format(
                 strftime("%m/%d/%Y %H:%M:%S", gmtime())))
-    
+
             if self.r_queries:
                 print('[STARTED] {} UTC Exporting views from database '
                       'to TSV files.'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
@@ -353,16 +354,17 @@ class FSEventHandler():
                 self.export_sqlite_views()
                 print('[FINISHED] {} UTC Exporting views from database '
                       'to TSV files.\n'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
-    
-            print("  Exception log and Reports exported to:\n  '{}'\n".format(os.path.join(self.meta['outdir'], self.meta['casename'])))
-    
+
+            print("  Exception log and Reports exported to:\n  '{}'\n".format(
+                os.path.join(self.meta['outdir'], self.meta['casename'])))
+
             # Close output files
             self.l_all_fsevents.close()
             self.logfile.close()
         else:
-            print('[FINISHED] {} UTC No records were parsed.\n'.format(strftime("%m/%d/%Y %H:%M:%S", gmtime())))
+            print('[FINISHED] {} UTC No records were parsed.\n'.format(strftime(
+                "%m/%d/%Y %H:%M:%S", gmtime())))
             print('Nothing to export.\n')
-
 
     @contextlib.contextmanager
     def skip_gzip_check(self):
@@ -376,7 +378,6 @@ class FSEventHandler():
         gzip.GzipFile._read_eof = lambda *args, **kwargs: None
         yield
         gzip.GzipFile._read_eof = _read_eof
-
 
     def _get_fsevent_files(self):
         """
@@ -466,12 +467,8 @@ class FSEventHandler():
                     sys.exit(0)
                 # Otherwise write error to log file
                 else:
-                    self.logfile.write(
-                        "%s\tError: Error while decompressing FSEvents file.%s\n" % (
-                            self.src_filename,
-                            str(exp)
-                        )
-                    )
+                    self.logfile.write("%s\tError: Error while decompressing FSEvents file.%s\n" %
+                                       (self.src_filename, str(exp)))
                 self.error_file_count += 1
                 continue
 
@@ -498,7 +495,6 @@ class FSEventHandler():
             # If DLSs were found, pass the decompressed file to be parsed
             FSEventHandler.parse(self, buf)
 
-
     def _get_fsevent_image_files(self):
         """
         get_fsevent_files will iterate through each file in the fsevents dir
@@ -509,16 +505,13 @@ class FSEventHandler():
         """
         # Print the header columns to the output file
         Output.print_columns(self.l_all_fsevents)
-                
+
         scan_path_spec = None
         scanner = source_scanner.SourceScanner()
         scan_context = source_scanner.SourceScannerContext()
         scan_context.OpenSourcePath(self.meta['source'])
 
-        scanner.Scan(
-            scan_context,
-            scan_path_spec=scan_path_spec
-        )
+        scanner.Scan(scan_context, scan_path_spec=scan_path_spec)
 
         for file_system_path_spec, file_system_scan_node in scan_context._file_system_scan_nodes.items():
             t_files = 0
@@ -526,25 +519,22 @@ class FSEventHandler():
             self.error_file_count = 0
             self.all_records_count = 0
             self.parsed_file_count = 0
-            
+
             try:
                 location = file_system_path_spec.parent.location
-            except:
+            except IndexError as e:
+                sys.stderr.write(str(e))
                 location = file_system_path_spec.location
-                
+
             print("  Processing Volume {}.\n".format(location))
 
-            fs_event_path_spec = path_spec_factory.Factory.NewPathSpec(
-                file_system_path_spec.type_indicator,
-                parent=file_system_path_spec.parent,
-                location="/.fseventsd"
-            )
+            fs_event_path_spec = path_spec_factory.Factory.NewPathSpec(file_system_path_spec.type_indicator,
+                                                                       parent=file_system_path_spec.parent,
+                                                                       location="/.fseventsd")
 
-            file_entry = resolver.Resolver.OpenFileEntry(
-                fs_event_path_spec
-            )
-            
-            if file_entry != None:
+            file_entry = resolver.Resolver.OpenFileEntry(fs_event_path_spec)
+
+            if file_entry is not None:
 
                 t_files = file_entry.number_of_sub_file_entries
                 for sub_file_entry in file_entry.sub_file_entries:
@@ -576,14 +566,14 @@ class FSEventHandler():
 
                     # Name of source fsevent file
                     self.src_filename = sub_file_entry.name
-                    self.src_fullpath = self.meta['source'] + ": " + location + sub_file_entry.path_spec.location
+                    self.src_fullpath = self.meta['source']\
+                        + ": " + location + sub_file_entry.path_spec.location
 
                     stat_object = sub_file_entry.GetStat()
 
                     # UTC mod date of source fsevent file
                     self.m_time = datetime.datetime.fromtimestamp(
-                        stat_object.mtime).strftime(
-                        '%Y-%m-%d %H:%M:%S') + " [UTC]"
+                        stat_object.mtime).strftime('%Y-%m-%d %H:%M:%S') + " [UTC]"
 
                     # Regex to match against source fsevent log filename
                     regexp = re.compile(r'^.*[\][0-9a-fA-F]{16}$')
@@ -608,12 +598,8 @@ class FSEventHandler():
                             buf = self.files.read()
 
                     except Exception as exp:
-                        self.logfile.write(
-                            "%s\tError: Error while decompressing FSEvents file.%s\n" % (
-                                self.src_filename,
-                                str(exp)
-                            )
-                        )
+                        self.logfile.write("%s\tError: Error while decompressing FSEvents file.%s\n" %
+                                           (self.src_filename, str(exp)))
                         self.error_file_count += 1
                         continue
 
@@ -639,18 +625,16 @@ class FSEventHandler():
 
                     # If DLSs were found, pass the decompressed file to be parsed
                     FSEventHandler.parse(self, buf)
-            
+
             else:
                 print('Unable to process volume or no fsevent files found')
                 continue
 
             print('\n\n  All Files Attempted: {}\n  All Parsed Files: {}\n  Files '
-                  'with Errors: {}\n  All Records Parsed: {}'.format(
-                self.all_files_count,
-                self.parsed_file_count,
-                self.error_file_count,
-                self.all_records_count))
-
+                  'with Errors: {}\n  All Records Parsed: {}'.format(self.all_files_count,
+                                                                     self.parsed_file_count,
+                                                                     self.error_file_count,
+                                                                     self.all_records_count))
 
     def dls_header_search(self, buf, f_name):
         """
@@ -674,13 +658,15 @@ class FSEventHandler():
                 page_len = struct.unpack("<I", raw_file[start_offset + 8:start_offset + 12])[0]
                 end_offset = start_offset + page_len
 
-                if raw_file[start_offset:start_offset + 4] == b'1SLD' or raw_file[start_offset:start_offset + 4] == b'2SLD':
+                if raw_file[start_offset:start_offset + 4] == b'1SLD' or raw_file[start_offset:start_offset +
+                        4] == b'2SLD':
                     self.my_dls.append({'Start Offset': start_offset, 'End Offset': end_offset})
                     dls_count += 1
                 else:
                     self.logfile.write("%s: Error in length of page when finding page headers." % (f_name))
                     break
-            except:
+            except Exception as e:
+                sys.stderr.write(str(e))
                 self.logfile.write("%s: Error in length of page when finding page headers." % (f_name))
                 break
 
@@ -690,7 +676,6 @@ class FSEventHandler():
         else:
             # Return true so that the DLSs found can be parsed
             return True
-
 
     def parse(self, buf):
         """
@@ -729,14 +714,9 @@ class FSEventHandler():
                 break
 
             # Pass the raw page + a start offset to find records within page
-            FSEventHandler.find_page_records(
-                self,
-                raw_page,
-                start_offset
-            )
+            FSEventHandler.find_page_records(self, raw_page, start_offset)
             # Increment the DLS page count by 1
             pg_count += 1
-
 
     def find_date(self, raw_file):
         """
@@ -769,8 +749,7 @@ class FSEventHandler():
                    "[\x30-\x39]{2}[.][\x30-\x39]{2}[.]asl")
         regex_6 = ("private/var/log/powermanagement/[\x30-\x39]{4}[.][\x30-\x39]{2}[.]" +
                    "[\x30-\x39]{2}[.]asl")
-        regex_7 = ("private/var/log/asl/AUX[.][\x30-\x39]{4}[.][\x30-\x39]{2}[.]" +
-                   "[\x30-\x39]{2}/[0-9]{9}")
+        regex_7 = ("private/var/log/asl/AUX[.][\x30-\x39]{4}[.][\x30-\x39]{2}[.]" + "[\x30-\x39]{2}/[0-9]{9}")
         regex_8 = "private/var/audit/[\x30-\x39]{14}[.]not_terminated"
 
         # Regex that matches only events with created flag
@@ -843,7 +822,8 @@ class FSEventHandler():
                 # Strip the date from the fsevent file
                 t_temp = raw_file_ascii[t_start:t_end]
                 wd_temp = struct.unpack("<Q", raw_file[match.regs[0][1] - 9:match.regs[0][1] - 1])[0]
-            elif raw_file_ascii[match.regs[0][0]:match.regs[0][0] + 39] == "private/var/log/com.apple.clouddocs.asl":
+            elif raw_file[match.regs[0][0]:match.regs[0][0] +
+                          39] == "private/var/log/com.apple.clouddocs.asl":
                 # Clear timestamp temp variable
                 t_temp = ''
                 # t_start uses the start offset of the match
@@ -885,7 +865,6 @@ class FSEventHandler():
 
         # Call the time range builder to rebuild time range
         self.build_time_range()
-
 
     def get_key(self, item):
         """
@@ -932,7 +911,6 @@ class FSEventHandler():
         # Assign temp list to time range list
         self.time_range = temp
 
-
     def find_page_records(self, page_buf, page_start_off):
         """
         Input values are starting offset of current page and
@@ -952,17 +930,11 @@ class FSEventHandler():
 
         # Call the file header parser for current DLS page
         try:
-            FsEventFileHeader(
-                page_buf[:13],
-                self.src_fullpath
-            )
-        except:
-            self.logfile.write(
-                "%s\tError: Unable to parse file header at offset %d\n" % (
-                    self.src_filename,
-                    page_start_off
-                )
-            )
+            FsEventFileHeader(page_buf[:13], self.src_fullpath)
+        except Exception as e:
+            sys.stderr.write(str(e))
+            self.logfile.write("%s\tError: Unable to parse file header at offset %d\n" %
+                               (self.src_filename, page_start_off))
 
         # Account for length of record for different DLS versions
         # Prior to HighSierra
@@ -989,7 +961,7 @@ class FSEventHandler():
                 if str(char).lower() == '0d' or str(char).lower() == '0a':
                     self.logfile.write('%s\tInfo: Non-printable char %s in record fullpath at '
                                        'page offset %d. Parser removed char for reporting '
-                                       'purposes.\n' % \
+                                       'purposes.\n' %
                                        (self.src_filename, char, page_start_off + start_offset))
                     char = ''
                 # Append the current char to the full path for current record
@@ -1051,7 +1023,7 @@ class FSEventHandler():
             if self.valid_record_check is False or record.wd == 0:
                 self.logfile.write('%s\tInfo: First invalid record found in carved '
                                    'gzip at offset %d. The remainder of this buffer '
-                                   'will not be parsed.\n' % \
+                                   'will not be parsed.\n' %
                                    (self.src_filename, page_start_off + start_offset))
                 fullpath = ''
                 break
@@ -1084,7 +1056,6 @@ class FSEventHandler():
             # Increment the current record count by 1
             self.all_records_count += 1
 
-
     def check_record(self, mask, fullpath):
         """
         Checks for conflicts in the record's flags
@@ -1106,6 +1077,13 @@ class FSEventHandler():
             n_used_err = "NOT_USED-0x0" in mask[1]
             ver_error = "ItemCloned" in mask[1] and self.dls_version == 1
 
+            # Check for decode errors
+            try:
+                fullpath.decode('utf-8')
+            except Exception as e:
+                sys.stderr.write(str(e))
+                decode_error = True
+
             # If any error exists return false to caller
             if type_err or \
                     fol_cr_err or \
@@ -1124,7 +1102,6 @@ class FSEventHandler():
         else:
             # Return true. fsevent file was not identified as being carved
             return True
-
 
     def apply_date(self, wd):
         """
@@ -1173,7 +1150,6 @@ class FSEventHandler():
         else:
             return "Unknown"
 
-
     def export_fsevent_report(self, outfile, row_count):
         """
         Export rows from fsevents table in DB to tab delimited report.
@@ -1200,7 +1176,8 @@ class FSEventHandler():
                 if type(cell) is str or type(cell) is unicode:
                     try:
                         values.append(cell)
-                    except:
+                    except Exception as e:
+                        sys.stderr.write(str(e))
                         print(row_count)
                         print(type(cell))
                         print(cell)
@@ -1209,7 +1186,8 @@ class FSEventHandler():
                 else:
                     try:
                         values.append(unicode(cell))
-                    except:
+                    except Exception as e:
+                        sys.stderr.write(str(e))
                         print(row_count)
                         print(type(cell))
                         print(cell)
@@ -1219,7 +1197,6 @@ class FSEventHandler():
             m_row = m_row + u'\n'
             outfile.write(m_row.encode("utf-8"))
             counter = counter + 1
-
 
     def export_sqlite_views(self):
         """
@@ -1253,7 +1230,8 @@ class FSEventHandler():
                                 values.append(cell)
                             else:
                                 values.append(unicode(cell))
-                    except:
+                    except Exception as e:
+                        sys.stderr.write(str(e))
                         values.append("ERROR_IN_VALUE")
                         print("ERROR: ", row)
                     m_row = u'\t'.join(values)
@@ -1292,6 +1270,7 @@ class FSEventRecord(dict):
     """
     FSEvent record structure.
     """
+
     def __init__(self, buf, offset, mask_hex):
         """
         """
@@ -1306,10 +1285,7 @@ class FSEventRecord(dict):
         wd_buf.reverse()
         self.wd_hex = binascii.b2a_hex(wd_buf)
         # Enumerate mask flags, string version
-        self.mask = enumerate_flags(
-            struct.unpack(">I", buf[8:12])[0],
-            EVENTMASK
-        )
+        self.mask = enumerate_flags(struct.unpack(">I", buf[8:12])[0], EVENTMASK)
 
 
 class Output(dict):
@@ -1330,7 +1306,7 @@ class Output(dict):
                 u'record_end_offset',
                 u'source',
                 u'source_modified_time'
-    ]
+    ]  # yapf: disable
     R_COLUMNS = [
                 u'event_id',
                 u'node_id',
@@ -1340,15 +1316,13 @@ class Output(dict):
                 u'approx_dates_plus_minus_one_day',
                 u'source',
                 u'source_modified_time'
-    ]
-
+    ]  # yapf: disable
 
     def __init__(self, attribs):
         """
         Update column values.
         """
         self.update(attribs)
-
 
     @staticmethod
     def print_columns(outfile):
@@ -1361,7 +1335,6 @@ class Output(dict):
         row = '\t'.join(values)
         row = row + '\n'
         outfile.write(row.encode("utf8"))
-
 
     def append_row(self):
         """
@@ -1400,6 +1373,7 @@ def create_sqlite_db(self):
                   [record_end_offset] [TEXT] NULL, \
                   [source] [TEXT] NULL, \
                   [source_modified_time] [TEXT] NULL)"
+
     if not os.path.isdir(os.path.join(self.meta['outdir'], self.meta['casename'])):
         os.makedirs(os.path.join(self.meta['outdir'], self.meta['casename']))
 
@@ -1409,7 +1383,8 @@ def create_sqlite_db(self):
             os.remove(db_filename)
         # Create database file if it doesn't exist
         db_is_new = not os.path.exists(db_filename)
-    except:
+    except Exception as e:
+        sys.stderr.write(str(e))
         print("\nThe following output file is currently in use by "
               "another program.\n -{}\nPlease ensure that the file is closed."
               " Then rerun the parser.".format(db_filename))
@@ -1438,7 +1413,11 @@ def create_sqlite_db(self):
                     source_modified_time'
 
                 query = i['query'].split("*")
-                query = query[0] + cols + query[1]
+                try:
+                    query = query[0] + cols + query[1]
+                except IndexError:
+                    print("Query does not SELECT *. Trying to run the query as it is...")
+                    query = i['query']
 
                 try:
                     SQL_CON.execute(query)
