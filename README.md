@@ -1,4 +1,7 @@
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser?ref=badge_shield)
+*** NEW ***
+---------------------
+- Updated for SLD3 header with new (and currently unknown) field in macOS 14.
+- Updated for python3 using https://github.com/dlcowen/FSEventsParser/pull/9/commits/22ad954f5607469572733f6fa4f62a8ae59b9d91, thanks https://github.com/Schramp!
 
 Overview
 ---------------------
@@ -126,7 +129,3 @@ approx_dates_plus_minus_one_day: Approximate dates (no times) that the event occ
 source: The fullpath of the FSEvents file that the record was parsed from.
 
 source_modified_time: The FSEvents source file modified date in UTC.
-
-
-## License
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Foliavd%2FFSEventsParser?ref=badge_large)

@@ -674,7 +674,7 @@ class FSEventHandler():
                 page_len = struct.unpack("<I", raw_file[start_offset + 8:start_offset + 12])[0]
                 end_offset = start_offset + page_len
 
-                if raw_file[start_offset:start_offset + 4] == b'1SLD' or raw_file[start_offset:start_offset + 4] == b'2SLD':
+                if raw_file[start_offset:start_offset + 4] == b'1SLD' or raw_file[start_offset:start_offset + 4] == b'2SLD' or raw_file[start_offset:start_offset + 4] == b'3SLD':
                     self.my_dls.append({'Start Offset': start_offset, 'End Offset': end_offset})
                     dls_count += 1
                 else:
@@ -724,6 +724,10 @@ class FSEventHandler():
                 self.dls_version = 1
             elif m_dls_chk == b"2SLD":
                 self.dls_version = 2
+            # CHANGE MADE FOR MACOS14 - SLD3
+            elif m_dls_chk == b"3SLD":
+                self.dls_version = 3
+                
             else:
                 self.logfile.write("%s: Unknown DLS Version." % (self.src_filename))
                 break
@@ -973,6 +977,10 @@ class FSEventHandler():
         elif self.dls_version == 2:
             bin_len = 21
             rbin_len = 20
+        # CHANGE MADE FOR MACOS14 - SLD3
+        elif self.dls_version == 3:
+            bin_len = 25
+            rbin_len = 24
         else:
             pass
 
@@ -1038,6 +1046,14 @@ class FSEventHandler():
             # Introduced with HighSierra
             if self.dls_version == 2:
                 fs_node_id = struct.unpack("<q", raw_record[12:])[0]
+            # CHANGE MADE FOR MACOS14 - SLD3
+            elif self.dls_version == 3:
+                fs_node_id = struct.unpack("<q", raw_record[12:20])[0]
+
+            # CHANGE MADE FOR MACOS14 - SLD3
+            # Unknown value, may be related to Document Revisions
+            unknown_integer = int.from_bytes(raw_record[20:24], byteorder='little')
+
 
             record_off = start_offset + page_start_off
 
@@ -1070,6 +1086,7 @@ class FSEventHandler():
                     'approx_dates_plus_minus_one_day': dates,
                     'mask': mask_hex,
                     'node_id': fs_node_id,
+                    'unknown_integer': unknown_integer,
                     'record_end_offset': record_off,
                     'source': self.src_fullpath,
                     'source_modified_time': self.m_time
@@ -1327,6 +1344,7 @@ class Output(dict):
                 u'approx_dates_plus_minus_one_day',
                 u'mask',
                 u'node_id',
+                u'unknown_integer',
                 u'record_end_offset',
                 u'source',
                 u'source_modified_time'
@@ -1397,6 +1415,7 @@ def create_sqlite_db(self):
                   [approx_dates_plus_minus_one_day] [TEXT] NULL, \
                   [mask] [TEXT] NULL, \
                   [node_id] [TEXT] NULL, \
+                  [unknown_integer] [TEXT] NULL, \
                   [record_end_offset] [TEXT] NULL, \
                   [source] [TEXT] NULL, \
                   [source_modified_time] [TEXT] NULL)"
@@ -1430,6 +1449,7 @@ def create_sqlite_db(self):
                 # Try to execute the query
                 cols = 'id_hex, \
                     node_id, \
+                    unknown_integer, \
                     fullpath, \
                     type, \
                     flags, \
@@ -1468,6 +1488,7 @@ def insert_sqlite_db(vals_to_insert):
         [approx_dates_plus_minus_one_day], \
         [mask], \
         [node_id], \
+        [unknown_integer], \
         [record_end_offset], \
         [source], \
         [source_modified_time]\
